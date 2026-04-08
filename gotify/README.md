@@ -18,6 +18,29 @@ Damit kannst du Benachrichtigungen, Statusmeldungen und Alarme im eigenen Umfeld
 - Unterstützung für **SQLite**, **MySQL** und **PostgreSQL**
 - zusätzliche Optionen für **Trusted Proxies**, **Response Headers**, **Realtime-Stream** und **CORS**
 
+### Passende HACS-Integration
+
+Zu diesem Gotify Server gibt es außerdem eine passende **HACS-Integration für Home Assistant**.
+
+Während diese App den **Gotify-Server selbst** direkt in Home Assistant bereitstellt, dient die HACS-Integration dazu, **einen oder mehrere Gotify-Server in Home Assistant einzubinden** und dort für Automationen, Benachrichtigungen, Sensoren, Events und Zustandsüberwachung zu nutzen.
+
+Das ist besonders praktisch, wenn du den hier bereitgestellten Gotify Server nicht nur betreiben, sondern auch direkt aus Home Assistant heraus aktiv verwenden möchtest.
+
+Typische Kombination:
+
+- diese App für den **selbst gehosteten Gotify-Server**
+- die HACS-Integration für **Senden, Empfangen, Überwachen und Automatisieren**
+
+Repository der HACS-Integration:
+
+```text
+https://github.com/Q14siX/gotify
+```
+
+Direkt in HACS öffnen:
+
+[![Open your Home Assistant instance and open a repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=Q14siX&repository=gotify&category=integration)
+
 ### Installation
 
 Füge das Repository direkt in Home Assistant hinzu:
@@ -89,6 +112,29 @@ This allows you to run notifications, status messages, and alerts in your own en
 - logically grouped configuration
 - support for **SQLite**, **MySQL**, and **PostgreSQL**
 - additional options for **trusted proxies**, **response headers**, **realtime stream**, and **CORS**
+
+### Matching HACS integration
+
+There is also a matching **HACS integration for Home Assistant** for this Gotify Server.
+
+While this app provides the **Gotify server itself** directly inside Home Assistant, the HACS integration is used to **connect one or more Gotify servers to Home Assistant** and use them there for automations, notifications, sensors, events, and status monitoring.
+
+This is especially useful if you want not only to run the Gotify Server provided here, but also to actively use it directly from Home Assistant.
+
+Typical setup:
+
+- this app for the **self-hosted Gotify server**
+- the HACS integration for **sending, receiving, monitoring, and automation**
+
+HACS integration repository:
+
+```text
+https://github.com/Q14siX/gotify
+```
+
+Open directly in HACS:
+
+[![Open your Home Assistant instance and open a repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=Q14siX&repository=gotify&category=integration)
 
 ### Installation
 
