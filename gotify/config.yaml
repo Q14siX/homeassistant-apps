@@ -1,0 +1,80 @@
+name: Gotify Server
+version: "20260408.1921"
+slug: gotify_server
+description: >-
+  Self-hosted Gotify push server with ingress and sidebar access /
+  Selbst gehosteter Gotify-Push-Server mit Ingress- und Seitenleisten-Zugriff
+url: https://github.com/Q14siX/gotify-homeassistant-app
+startup: application
+boot: auto
+homeassistant: "2026.4.0"
+arch:
+  - aarch64
+  - amd64
+ingress: true
+ingress_port: 80
+panel_icon: mdi:message-badge-outline
+panel_title: Gotify
+panel_admin: false
+hassio_api: true
+hassio_role: default
+ports:
+  80/tcp: 8088
+backup: hot
+watchdog: tcp://[HOST]:[PORT:80]
+options:
+  general:
+    use_homeassistant_timezone: true
+    timezone_override: ""
+    registration: false
+  defaultuser:
+    name: admin
+    pass: admin
+  database:
+    dialect: sqlite3
+    connection: /data/gotify.db
+  security:
+    passstrength: 10
+    trustedproxies: []
+  advanced:
+    responseheaders: []
+    pingperiodseconds: 45
+    streamallowedorigins: []
+    corsalloworigins: []
+    corsallowmethods: []
+    corsallowheaders: []
+    keepaliveperiodseconds: 0
+    listenaddr: ""
+    uploadedimagesdir: /data/images
+    pluginsdir: /data/plugins
+schema:
+  general:
+    use_homeassistant_timezone: bool
+    timezone_override: str?
+    registration: bool
+  defaultuser:
+    name: str
+    pass: password
+  database:
+    dialect: list(sqlite3|mysql|postgres)
+    connection: str
+  security:
+    passstrength: int(4,31)
+    trustedproxies:
+      - str
+  advanced:
+    responseheaders:
+      - str
+    pingperiodseconds: int(1,3600)
+    streamallowedorigins:
+      - str
+    corsalloworigins:
+      - str
+    corsallowmethods:
+      - str
+    corsallowheaders:
+      - str
+    keepaliveperiodseconds: int(-1,3600)
+    listenaddr: str?
+    uploadedimagesdir: str
+    pluginsdir: str?

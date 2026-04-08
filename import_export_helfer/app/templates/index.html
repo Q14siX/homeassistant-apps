@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html lang="de" class="h-full bg-gray-100">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Import / Export Helfer</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .hidden { display: none; }
+        .rename-input { display: none; }
+        input[type="radio"]:checked + label + .rename-input {
+            display: block;
+        }
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border-width: 0;
+        }
+    </style>
+</head>
+<body class="h-full p-4 md:p-8 bg-gray-100 font-sans">
+    <div class="max-w-7xl mx-auto bg-white rounded-2xl shadow-xl p-6 md:p-8 space-y-6">
+        <div class="flex items-center space-x-4">
+            <div class="flex-shrink-0">
+                <span class="flex items-center justify-center h-12 w-12 rounded-full bg-blue-100 text-blue-600">
+                    <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h18v4H3V3m1 5h16v13H4V8m5 3v2h6v-2H9z" />
+                    </svg>
+                </span>
+            </div>
+            <div>
+                <h1 class="text-2xl font-bold text-gray-900">Import / Export Helfer</h1>
+                <p class="text-sm text-gray-500">Sichern und Wiederherstellen einzelner Home Assistant Elemente.</p>
+            </div>
+        </div>
+        <div class="border-b border-gray-200">
+            <nav class="-mb-px flex space-x-8" aria-label="Tabs">
+                <button id="tab-export" onclick="showTab('export')" class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm text-blue-600 border-blue-500" aria-current="page">
+                    Exportieren
+                </button>
+                <button id="tab-import" onclick="showTab('import')" class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm text-gray-500 border-transparent hover:text-gray-700 hover:border-gray-300">
+                    Importieren
+                </button>
+            </nav>
+        </div>
+        <div id="tab-content-export" class="space-y-6">
+            <div class="relative">
+                <label for="filterInput" class="sr-only">Elemente filtern</label>
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <svg class="h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                        <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" />
+                    </svg>
+                </div>
+                <input type="text" id="filterInput" onkeyup="filterItems()" placeholder="Elemente filtern (z.B. nach Name oder Typ)..." class="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg leading-5 bg-white placeholder-gray-500 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+            </div>
+            <div class="border border-gray-200 rounded-lg overflow-hidden">
+                <div class="hidden md:grid md:grid-cols-12 md:gap-4 md:items-center px-6 py-3 bg-gray-50 border-b border-gray-200">
+                    <div class="md:col-span-1">
+                        <label for="selectAll" class="sr-only">Alle sichtbaren Elemente auswählen</label>
+                        <input type="checkbox" id="selectAll" onchange="toggleSelectAll(this.checked)" class="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
+                    </div>
+                    <div class="md:col-span-5 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</div>
+                    <div class="md:col-span-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Typ</div>
+                    <div class="md:col-span-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Quelle</div>
+                </div>
+                <div id="item-list" class="bg-white divide-y divide-gray-200">
+                    <div id="loading-row" class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">
+                        <div class="flex items-center justify-center" role="status">
+                            <svg class="animate-spin h-5 w-5 text-blue-600 mr-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                            <span class="sr-only">Lade...</span>
+                            Lade Elemente...
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="flex justify-end">
+                <button id="exportButton" onclick="exportSelectedItems()" class="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-lg shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50" disabled>
+                    <svg class="h-5 w-5 mr-2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                      <path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd" />
+                    </svg>
+                    Auswahl exportieren
+                </button>
+            </div>
+        </div>
+        <div id="tab-content-import" class="hidden space-y-6">
+            <div id="import-upload-view" class="space-y-6">
+                <p class="text-sm text-gray-700">Wählen Sie eine zuvor exportierte <code class="text-xs bg-gray-100 p-1 rounded">.zip</code>-Datei aus, um die Elemente zu analysieren.</p>
+                <div id="drop-zone" class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-lg">
+                    <div class="space-y-1 text-center">
+                        <svg class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48" aria-hidden="true">
+                            <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                        </svg>
+                        <div class="flex text-sm text-gray-600">
+                            <label for="file-upload" class="relative cursor-pointer bg-white rounded-md font-medium text-blue-600 hover:text-blue-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-blue-500">
+                                <span>Datei hochladen</span>
+                                <input id="file-upload" name="file-upload" type="file" class="sr-only" accept=".zip" onchange="handleFileSelect(this.files)">
+                            </label>
+                            <p class="pl-1">oder per Drag & Drop</p>
+                        </div>
+                        <p class="text-xs text-gray-500" id="file-name-display">ZIP-Datei (max. 50MB)</p>
+                    </div>
+                </div>
+                <div class="flex justify-end">
+                    <button id="analyzeButton" onclick="analyzeImportFile()" class="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-lg shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50" disabled>
+                        <svg class="h-5 w-5 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+                        </svg>
+                        Hochladen und Analysieren
+                    </button>
+                </div>
+            </div>
+            <div id="import-review-view" class="hidden space-y-6">
+                <h2 class="text-xl font-semibold text-gray-900">Import-Analyse</h2>
+                <p class="text-sm text-gray-700">Bitte überprüfen Sie die gefundenen Elemente und wählen Sie die gewünschte Aktion aus.</p>
+                <div class="border border-gray-200 rounded-lg overflow-hidden">
+                    <div class="hidden md:grid md:grid-cols-12 md:gap-4 px-6 py-3 bg-gray-50 border-b border-gray-200">
+                        <div class="md:col-span-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</div>
+                        <div class="md:col-span-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Typ</div>
+                        <div class="md:col-span-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</div>
+                        <div class="md:col-span-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aktion</div>
+                    </div>
+                    <div id="import-review-list" class="bg-white divide-y divide-gray-200">
+                    </div>
+                </div>
+                <div class="flex justify-between">
+                    <button onclick="showImportUploadView()" class="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-lg shadow-sm text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                        Zurück
+                    </button>
+                    <button id="executeImportButton" onclick="executeImport()" class="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-lg shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                        Import jetzt durchführen
+                    </button>
+                </div>
+            </div>
+            <div id="import-result-view" class="hidden space-y-4">
+                 <h2 class="text-xl font-semibold text-gray-900">Import abgeschlossen</h2>
+                 <p class="text-sm text-gray-700">Der Import wurde verarbeitet. Details finden Sie unten.</p>
+                 <div id="import-result-details" class="p-4 bg-gray-50 rounded-lg max-h-60 overflow-y-auto text-sm text-gray-600 border border-gray-200">
+                 </div>
+                 <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4">
+                    <div class="flex">
+                        <div class="flex-shrink-0">
+                            <svg class="h-5 w-5 text-yellow-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                                <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.332-.21 3.03-1.742 3.03H4.42c-1.532 0-2.493-1.698-1.742-3.03l5.58-9.92zM10 13a1 1 0 110-2 1 1 0 010 2zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+                            </svg>
+                        </div>
+                        <div class="ml-3">
+                            <p class="text-sm text-yellow-700">
+                                <strong>Wichtig:</strong> Bitte starten Sie Home Assistant neu, um alle Import-Änderungen wirksam zu machen.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                 <div class="flex justify-end">
+                     <button onclick="showImportUploadView()" class="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-lg shadow-sm text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                        Weitere Datei importieren
+                    </button>
+                 </div>
+            </div>
+            <div id="import-warning-box" class="bg-yellow-50 border-l-4 border-yellow-400 p-4">
+                <div class="flex">
+                    <div class="flex-shrink-0">
+                        <svg class="h-5 w-5 text-yellow-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                            <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.332-.21 3.03-1.742 3.03H4.42c-1.532 0-2.493-1.698-1.742-3.03l5.58-9.92zM10 13a1 1 0 110-2 1 1 0 010 2zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+                        </svg>
+                    </div>
+                    <div class="ml-3">
+                        <p class="text-sm text-yellow-700">
+                           <strong>Achtung:</strong> Der Import überschreibt bestehende Konfigurationen. Nach dem Import ist ein <strong>Neustart von Home Assistant</strong> erforderlich.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div id="message-area" class="hidden rounded-md p-4" role="alert" aria-live="assertive">
+            <p class="text-sm font-medium" id="message-text"></p>
+        </div>
+    </div>
+    <script>
+        let allItems = [];
+        let selectedFile = null;
+        let importAnalysisData = [];
+        let messageTimeout = null;
+        document.addEventListener('DOMContentLoaded', () => {
+            fetchItems();
+            setupDragAndDrop();
+        });
+        function showTab(tabName) {
+            const exportTab = document.getElementById('tab-export');
+            const importTab = document.getElementById('tab-import');
+            const exportContent = document.getElementById('tab-content-export');
+            const importContent = document.getElementById('tab-content-import');
+            const activeClasses = ['text-blue-600', 'border-blue-500'];
+            const inactiveClasses = ['text-gray-500', 'border-transparent', 'hover:text-gray-700', 'hover:border-gray-300'];
+            if (tabName === 'export') {
+                exportContent.classList.remove('hidden');
+                importContent.classList.add('hidden');
+                exportTab.classList.add(...activeClasses);
+                exportTab.classList.remove(...inactiveClasses);
+                exportTab.setAttribute('aria-current', 'page');
+                importTab.classList.add(...inactiveClasses);
+                importTab.classList.remove(...activeClasses);
+                importTab.removeAttribute('aria-current');
+            } else {
+                importContent.classList.remove('hidden');
+                exportContent.classList.add('hidden');
+                importTab.classList.add(...activeClasses);
+                importTab.classList.remove(...inactiveClasses);
+                importTab.setAttribute('aria-current', 'page');
+                exportTab.classList.add(...inactiveClasses);
+                exportTab.classList.remove(...activeClasses);
+                exportTab.removeAttribute('aria-current');
+            }
+        }
+        function fetchItems() {
+            const loadingRow = document.getElementById('loading-row');
+            const itemList = document.getElementById('item-list');
+            fetch('api/items')
+                .then(response => {
+                    if (!response.ok) { throw new Error(`HTTP-Fehler! Status: ${response.status}`); }
+                    return response.json();
+                })
+                .then(data => {
+                    let items = [];
+                    if (Array.isArray(data)) { items = data; } 
+                    else if (data && Array.isArray(data.items)) { items = data.items; }
+                    allItems = items;
+                    if (loadingRow) { loadingRow.style.display = 'none'; }
+                    renderItems(allItems);
+                })
+                .catch(error => {
+                    console.error('Fehler beim Laden der Elemente:', error);
+                    if (loadingRow) { loadingRow.innerHTML = `<div class="px-6 py-4 whitespace-nowrap text-sm text-red-600 text-center">Fehler beim Laden der Elemente: ${error.message}</div>`; }
+                    showMessage(`Fehler beim Laden der Elemente: ${error.message}`, 'error');
+                });
+        }
+        function escapeHTML(str) {
+            if (str === null || str === undefined) return '';
+            return str.toString()
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+        function renderItems(items) {
+            const itemList = document.getElementById('item-list');
+            const exportButton = document.getElementById('exportButton');
+            itemList.innerHTML = ''; 
+            if (items.length === 0) {
+                itemList.innerHTML = '<div class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">Keine exportierbaren Elemente gefunden.</div>';
+                exportButton.disabled = true;
+                return;
+            }
+            items.sort((a, b) => {
+                const typeA = (a.type || '').replace(' (YAML)', '');
+                const typeB = (b.type || '').replace(' (YAML)', '');
+                const nameA = a.name || '';
+                const nameB = b.name || '';
+                const typeCompare = typeA.localeCompare(typeB);
+                if (typeCompare !== 0) { return typeCompare; }
+                return nameA.localeCompare(nameB);
+            });
+            let currentType = null; 
+            items.forEach(item => {
+                const itemType = (item.type || 'Unbekannt').replace(' (YAML)', '');
+                if (itemType !== currentType) {
+                    currentType = itemType;
+                    const groupRow = document.createElement('div');
+                    groupRow.className = 'bg-gray-50';
+                    groupRow.innerHTML = `<div class="px-6 py-2 whitespace-nowrap text-sm font-semibold text-gray-900">${currentType}</div>`;
+                    itemList.appendChild(groupRow);
+                }
+                const itemCard = document.createElement('div');
+                itemCard.className = 'item-row md:grid md:grid-cols-12 md:gap-4 md:items-center px-6 py-4';
+                const cleanType = (item.type || '').replace(' (YAML)', '');
+                itemCard.dataset.type = cleanType;
+                itemCard.dataset.name = item.name;
+                const safeName = escapeHTML(item.name || 'N/A');
+                const checkboxId = `export-item-${item.id}`;
+                itemCard.innerHTML = `
+                    <div class="md:col-span-1 flex items-center">
+                        <input type="checkbox" id="${checkboxId}" class="item-checkbox h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500" value="${item.id}" onchange="updateExportButtonState()">
+                        <label for="${checkboxId}" class="md:hidden ml-3 text-sm font-medium text-gray-900">${safeName}</label>
+                    </div>
+                    <div class="hidden md:block md:col-span-5 text-sm font-medium text-gray-900">${safeName}</div>
+                    <div class="mt-2 md:mt-0 md:col-span-3 pl-7 md:pl-0">
+                        <span class="md:hidden text-xs font-medium text-gray-500 uppercase mr-2">Typ:</span>
+                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
+                            ${cleanType || 'N/A'}
+                        </span>
+                    </div>
+                    <div class="mt-2 md:mt-0 md:col-span-3 pl-7 md:pl-0">
+                        <span class="md:hidden text-xs font-medium text-gray-500 uppercase mr-2">Quelle:</span>
+                        <span class="text-sm text-gray-500">${item.source || 'N/A'}</span>
+                    </div>
+                `;
+                itemList.appendChild(itemCard);
+            });
+            updateExportButtonState();
+        }
+        function filterItems() {
+            const filterText = document.getElementById('filterInput').value.toLowerCase();
+            const rows = document.querySelectorAll('#item-list div');
+            let currentTypeVisible = false;
+            const allRows = Array.from(rows).reverse();
+            allRows.forEach(row => {
+                if (row.classList.contains('item-row')) {
+                    const name = (row.dataset.name || '').toLowerCase();
+                    const type = (row.dataset.type || '').toLowerCase();
+                    if (name.includes(filterText) || type.includes(filterText)) {
+                        row.style.display = '';
+                        currentTypeVisible = true;
+                    } else {
+                        row.style.display = 'none';
+                    }
+                } else if (row.id === 'loading-row') {
+                } else {
+                    if (currentTypeVisible) { row.style.display = ''; } 
+                    else { row.style.display = 'none'; }
+                    currentTypeVisible = false;
+                }
+            });
+        }
+        function getSelectedIds() {
+            const checkboxes = document.querySelectorAll('.item-checkbox:checked');
+            return Array.from(checkboxes).map(cb => cb.value);
+        }
+        function updateExportButtonState() {
+            const selectedIds = getSelectedIds();
+            const exportButton = document.getElementById('exportButton');
+            exportButton.disabled = selectedIds.length === 0;
+            const allCheckboxes = document.querySelectorAll('.item-checkbox');
+            const selectAll = document.getElementById('selectAll');
+            const visibleCheckboxes = Array.from(allCheckboxes).filter(cb => cb.closest('.item-row').style.display !== 'none');
+            const visibleSelectedCheckboxes = Array.from(document.querySelectorAll('.item-checkbox:checked')).filter(cb => cb.closest('.item-row').style.display !== 'none');
+            if (visibleCheckboxes.length > 0 && visibleSelectedCheckboxes.length === visibleCheckboxes.length) {
+                selectAll.checked = true;
+                selectAll.indeterminate = false;
+            } else if (visibleSelectedCheckboxes.length > 0) {
+                selectAll.checked = false;
+                selectAll.indeterminate = true;
+            } else {
+                selectAll.checked = false;
+                selectAll.indeterminate = false;
+            }
+        }
+        function toggleSelectAll(checked) {
+            const checkboxes = document.querySelectorAll('.item-checkbox');
+            checkboxes.forEach(cb => {
+                if (cb.closest('.item-row').style.display !== 'none') {
+                    cb.checked = checked;
+                }
+            });
+            updateExportButtonState();
+        }
+        function exportSelectedItems() {
+            const selectedIds = getSelectedIds();
+            if (selectedIds.length === 0) {
+                showMessage('Bitte wählen Sie mindestens ein Element aus.', 'warning');
+                return;
+            }
+            const exportButton = document.getElementById('exportButton');
+            const originalButtonText = exportButton.innerHTML;
+            exportButton.innerHTML = '<svg class="animate-spin h-5 w-5 mr-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Exportiere...';
+            exportButton.disabled = true;
+            fetch('api/export', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', },
+                body: JSON.stringify({ item_ids: selectedIds }),
+            })
+            .then(response => { 
+                if (!response.ok) {
+                    return response.json().then(err => {
+                        throw new Error(err.error || `HTTP-Fehler! Status: ${response.status}`);
+                    });
+                }
+                const disposition = response.headers.get('Content-Disposition');
+                let filename = `ha_export_${Date.now()}.zip`; 
+                if (disposition && disposition.indexOf('attachment') !== -1) {
+                    const filenameRegex = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/;
+                    const matches = filenameRegex.exec(disposition);
+                    if (matches != null && matches[1]) {
+                        filename = matches[1].replace(/['"]/g, '');
+                    }
+                }
+                return response.blob().then(blob => ({ blob, filename }));
+            })
+            .then(({ blob, filename }) => {
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.style.display = 'none';
+                a.href = url;
+                a.download = filename; 
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+                a.remove();
+                showMessage('Export erfolgreich heruntergeladen.', 'success');
+            })
+            .catch(error => {
+                console.error('Exportfehler:', error);
+                showMessage(`Export-Fehler: ${error.message}`, 'error');
+            })
+            .finally(() => {
+                exportButton.innerHTML = originalButtonText;
+                exportButton.disabled = false;
+                updateExportButtonState();
+            });
+        }
+        function setupDragAndDrop() {
+            const dropZone = document.getElementById('drop-zone');
+            dropZone.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                dropZone.classList.add('border-blue-500', 'bg-blue-50');
+            });
+            dropZone.addEventListener('dragleave', (e) => {
+                e.preventDefault();
+                dropZone.classList.remove('border-blue-500', 'bg-blue-50');
+            });
+            dropZone.addEventListener('drop', (e) => {
+                e.preventDefault();
+                dropZone.classList.remove('border-blue-500', 'bg-blue-50');
+                if (e.dataTransfer.files.length) {
+                    document.getElementById('file-upload').files = e.dataTransfer.files;
+                    handleFileSelect(e.dataTransfer.files);
+                }
+            });
+        }
+        function handleFileSelect(files) {
+            const analyzeButton = document.getElementById('analyzeButton');
+            const fileNameDisplay = document.getElementById('file-name-display');
+            if (files.length > 0) {
+                selectedFile = files[0];
+                fileNameDisplay.textContent = selectedFile.name;
+                analyzeButton.disabled = false;
+            } else {
+                selectedFile = null;
+                fileNameDisplay.textContent = 'ZIP-Datei (max. 50MB)';
+                analyzeButton.disabled = true;
+            }
+        }
+        function showImportUploadView() {
+            document.getElementById('import-upload-view').classList.remove('hidden');
+            document.getElementById('import-review-view').classList.add('hidden');
+            document.getElementById('import-result-view').classList.add('hidden');
+            document.getElementById('import-warning-box').classList.remove('hidden');
+            handleFileSelect([]);
+            importAnalysisData = [];
+        }
+        function analyzeImportFile() {
+            if (!selectedFile) {
+                showMessage('Keine Datei zum Analysieren ausgewählt.', 'warning');
+                return;
+            }
+            const analyzeButton = document.getElementById('analyzeButton');
+            const originalButtonText = analyzeButton.innerHTML;
+            analyzeButton.innerHTML = '<svg class="animate-spin h-5 w-5 mr-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Analysiere...';
+            analyzeButton.disabled = true;
+            const formData = new FormData();
+            formData.append('file', selectedFile);
+            fetch('api/analyze_import', {
+                method: 'POST',
+                body: formData,
+            })
+            .then(response => response.json().then(data => ({ ok: response.ok, data })))
+            .then(({ ok, data }) => {
+                if (!ok) {
+                    throw new Error(data.error || 'Unbekannter Analysefehler');
+                }
+                importAnalysisData = data;
+                renderImportReview(data);
+                document.getElementById('import-upload-view').classList.add('hidden');
+                document.getElementById('import-review-view').classList.remove('hidden');
+                document.getElementById('import-warning-box').classList.add('hidden');
+            })
+            .catch(error => {
+                console.error('Analysefehler:', error);
+                showMessage(`Analyse-Fehler: ${error.message}`, 'error');
+            })
+            .finally(() => {
+                analyzeButton.innerHTML = originalButtonText;
+                if(selectedFile) { analyzeButton.disabled = false; }
+            });
+        }
+        function renderImportReview(items) {
+            const itemList = document.getElementById('import-review-list');
+            itemList.innerHTML = '';
+            if (items.length === 0) {
+                itemList.innerHTML = '<div class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">Keine Elemente in der ZIP-Datei gefunden.</div>';
+                document.getElementById('executeImportButton').disabled = true;
+                return;
+            }
+            items.sort((a, b) => {
+                const typeA = (a.type || '').replace(' (YAML)', '');
+                const typeB = (b.type || '').replace(' (YAML)', '');
+                const nameA = a.name || '';
+                const nameB = b.name || '';
+                const typeCompare = typeA.localeCompare(typeB);
+                if (typeCompare !== 0) { return typeCompare; }
+                return nameA.localeCompare(nameB);
+            });
+            let currentType = null;
+            items.forEach((item, index) => {
+                const itemType = (item.type || 'Unbekannt').replace(' (YAML)', '');
+                if (itemType !== currentType) {
+                    currentType = itemType;
+                    const groupRow = document.createElement('div');
+                    groupRow.className = 'bg-gray-50';
+                    groupRow.innerHTML = `<div class="px-6 py-2 whitespace-nowrap text-sm font-semibold text-gray-900">${currentType}</div>`;
+                    itemList.appendChild(groupRow);
+                }
+                const itemCard = document.createElement('div');
+                itemCard.className = 'px-6 py-4 md:grid md:grid-cols-12 md:gap-4 md:items-start';
+                const uniqueId = `action-${index}`;
+                const isConflict = item.status === 'conflict';
+                const safeName = escapeHTML(item.name || 'N/A');
+                let statusBadge = isConflict ? 
+                    '<span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">Konflikt</span>' :
+                    '<span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Neu</span>';
+                
+                const actionsHtml = `
+                    <div class="flex flex-col space-y-2">
+                        <div>
+                            <input type="radio" id="${uniqueId}-skip" name="${uniqueId}" value="skip" class="h-4 w-4 text-blue-600 border-gray-300 focus:ring-blue-500" checked>
+                            <label for="${uniqueId}-skip" class="ml-3 text-sm text-gray-700">Überspringen</label>
+                        </div>
+                        <div>
+                            <input type="radio" id="${uniqueId}-overwrite" name="${uniqueId}" value="overwrite" class="h-4 w-4 text-blue-600 border-gray-300 focus:ring-blue-500">
+                            <label for="${uniqueId}-overwrite" class="ml-3 text-sm text-gray-700">${isConflict ? 'Überschreiben' : 'Hinzufügen'}</label>
+                        </div>
+                        ${isConflict ? `
+                        <div>
+                            <input type="radio" id="${uniqueId}-rename" name="${uniqueId}" value="rename" class="h-4 w-4 text-blue-600 border-gray-300 focus:ring-blue-500">
+                            <label for="${uniqueId}-rename" class="ml-3 text-sm text-gray-700">Umbenennen zu:</label>
+                            <input type="text" id="${uniqueId}-rename-input" 
+                                   value="${safeName}" 
+                                   class="rename-input mt-1 ml-7 block w-full sm:w-auto shadow-sm sm:text-sm border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500" 
+                                   placeholder="Neuer Name...">
+                        </div>
+                        ` : ''}
+                    </div>
+                `;
+                itemCard.innerHTML = `
+                    <div class="md:col-span-3">
+                        <span class="md:hidden text-xs font-medium text-gray-500 uppercase mr-2">Name:</span>
+                        <div class="text-sm font-medium text-gray-900 inline md:block">${safeName}</div>
+                    </div>
+                    <div class="mt-2 md:mt-0 md:col-span-3">
+                        <span class="md:hidden text-xs font-medium text-gray-500 uppercase mr-2">Typ:</span>
+                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
+                            ${itemType || 'N/A'}
+                        </span>
+                    </div>
+                    <div class="mt-2 md:mt-0 md:col-span-2">
+                        <span class="md:hidden text-xs font-medium text-gray-500 uppercase mr-2">Status:</span>
+                        ${statusBadge}
+                    </div>
+                    <div class="mt-4 md:mt-0 md:col-span-4">
+                        <span class="md:hidden text-xs font-medium text-gray-500 uppercase mb-2 block">Aktion:</span>
+                        ${actionsHtml}
+                    </div>
+                `;
+                itemList.appendChild(itemCard);
+            });
+            document.getElementById('executeImportButton').disabled = false;
+        }
+        function executeImport() {
+            let isValid = true;
+            const decisions = [];
+            importAnalysisData.forEach((item, index) => {
+                if (!isValid) return; 
+                const uniqueId = `action-${index}`;
+                const selectedAction = document.querySelector(`input[name="${uniqueId}"]:checked`).value;
+                let newName = null;
+                if (selectedAction === 'rename') {
+                    newName = document.getElementById(`${uniqueId}-rename-input`).value;
+                    if (!newName || newName.trim() === '') {
+                        showMessage(`Bitte geben Sie einen neuen Namen für "${item.name}" ein.`, 'error');
+                        isValid = false;
+                    }
+                }
+                decisions.push({
+                    id: item.id,
+                    zip_path: item.zip_path,
+                    action: selectedAction,
+                    new_name: newName
+                });
+            });
+            if (!isValid) return;
+            const executeButton = document.getElementById('executeImportButton');
+            const originalButtonText = executeButton.innerHTML;
+            executeButton.innerHTML = '<svg class="animate-spin h-5 w-5 mr-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Importiere...';
+            executeButton.disabled = true;
+            const formData = new FormData();
+            formData.append('file', selectedFile);
+            formData.append('decisions', JSON.stringify(decisions));
+            fetch('api/execute_import', {
+                method: 'POST',
+                body: formData,
+            })
+            .then(response => response.json().then(data => ({ ok: response.ok, data })))
+            .then(({ ok, data }) => {
+                if (!ok) {
+                    throw new Error(data.error || 'Unbekannter Importfehler');
+                }
+                document.getElementById('import-review-view').classList.add('hidden');
+                document.getElementById('import-result-view').classList.remove('hidden');
+                const detailsContainer = document.getElementById('import-result-details');
+                if (data.details && Array.isArray(data.details)) {
+                    detailsContainer.innerHTML = data.details.map(d => `<p>${escapeHTML(d)}</p>`).join('');
+                } else {
+                    detailsContainer.innerHTML = `<p>${escapeHTML(data.message || 'Import abgeschlossen.')}</p>`;
+                }
+                showMessage(data.message || 'Import erfolgreich verarbeitet.', 'success');
+                fetchItems();
+            })
+            .catch(error => {
+                console.error('Importfehler:', error);
+                showMessage(`Import-Fehler: ${error.message}`, 'error');
+                executeButton.innerHTML = originalButtonText;
+                executeButton.disabled = false;
+            });
+        }
+        function showMessage(message, type = 'info') {
+            const messageArea = document.getElementById('message-area');
+            const messageText = document.getElementById('message-text');
+            if (messageTimeout) {
+                clearTimeout(messageTimeout);
+            }
+            messageArea.classList.remove('hidden');
+            const classesToRemove = [
+                'bg-red-100', 'border-red-400', 'text-red-700',
+                'bg-green-100', 'border-green-400', 'text-green-700',
+                'bg-yellow-100', 'border-yellow-400', 'text-yellow-700',
+                'bg-blue-100', 'border-blue-400', 'text-blue-700',
+                'border-l-4'
+            ];
+            messageArea.classList.remove(...classesToRemove);
+            if (type === 'error') {
+                messageArea.classList.add('bg-red-100', 'border-l-4', 'border-red-400', 'text-red-700');
+            } else if (type === 'success') {
+                messageArea.classList.add('bg-green-100', 'border-l-4', 'border-green-400', 'text-green-700');
+            } else if (type === 'warning') {
+                messageArea.classList.add('bg-yellow-100', 'border-l-4', 'border-yellow-400', 'text-yellow-700');
+            } else {
+                messageArea.classList.add('bg-blue-100', 'border-l-4', 'border-blue-400', 'text-blue-700');
+            }
+            messageText.textContent = message;
+            messageTimeout = setTimeout(() => {
+                messageArea.classList.add('hidden');
+            }, 5000);
+        }
+    </script>
+</body>
+</html>

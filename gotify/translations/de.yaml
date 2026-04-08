@@ -1,0 +1,80 @@
+configuration:
+  general:
+    name: Allgemein
+    description: Grundlegende Einstellungen für Registrierung und Zeitzone.
+    fields:
+      use_homeassistant_timezone:
+        name: Home-Assistant-Zeitzone verwenden
+        description: Wenn aktiviert, übernimmt die App automatisch die in Home Assistant eingestellte Zeitzone.
+      timezone_override:
+        name: Eigene Zeitzone (optional)
+        description: "Überschreibt die automatisch erkannte Home-Assistant-Zeitzone. Leer lassen, um die Zeitzone von Home Assistant zu verwenden. Beispiel: Europe/Berlin."
+      registration:
+        name: Registrierung erlauben
+        description: Erlaubt neuen Benutzern, sich direkt über die Gotify-Weboberfläche selbst zu registrieren.
+  defaultuser:
+    name: Initiales Administratorkonto
+    description: Diese Zugangsdaten werden nur verwendet, wenn Gotify die Datenbank erstmals anlegt.
+    fields:
+      name:
+        name: Benutzername
+        description: Benutzername des initialen Administrators. Wird nur bei einer neu erstellten Datenbank übernommen.
+      pass:
+        name: Passwort
+        description: Passwort des initialen Administrators. Änderungen hier ändern keine bereits vorhandenen Benutzer in einer bestehenden Datenbank.
+  database:
+    name: Datenbank
+    description: Einstellungen für das von Gotify verwendete Datenbank-Backend.
+    fields:
+      dialect:
+        name: Datenbanktyp
+        description: Wähle aus, ob Gotify SQLite, MySQL oder PostgreSQL verwenden soll.
+      connection:
+        name: Verbindungszeichenfolge
+        description: Bei SQLite normalerweise ein Dateipfad wie /data/gotify.db. Bei MySQL oder PostgreSQL ein vollständiger Connection-String des jeweiligen Datenbankservers.
+  security:
+    name: Sicherheit & Proxys
+    description: Sicherheitsrelevante Optionen für Passwort-Hashing und Reverse-Proxy-Auswertung.
+    fields:
+      passstrength:
+        name: Bcrypt-Stärke
+        description: Kostenfaktor für das Hashen von Passwörtern. Höhere Werte erhöhen die Rechenlast, verbessern aber den Schutz gegen Offline-Angriffe.
+      trustedproxies:
+        name: Vertrauenswürdige Proxys
+        description: IP-Adressen oder Netze von Reverse Proxys, deren Forwarded-Header vertraut werden dürfen, zum Beispiel X-Forwarded-For.
+  advanced:
+    name: Erweitert
+    description: Seltener benötigte Optionen für Header, Streams, CORS, Netzwerk und Speicherpfade.
+    fields:
+      responseheaders:
+        name: Zusätzliche Antwort-Header
+        description: "Ein Eintrag pro Zeile im Format Header-Name: Wert, zum Beispiel X-Frame-Options: SAMEORIGIN."
+      pingperiodseconds:
+        name: Stream-Ping-Intervall
+        description: Abstand in Sekunden zwischen den WebSocket-Pings des Echtzeit-Streams.
+      streamallowedorigins:
+        name: Zusätzliche Stream-Origins
+        description: Origins, die WebSocket-Verbindungen zum Echtzeit-Stream aufbauen dürfen. Meist nur bei externen Frontends nötig.
+      corsalloworigins:
+        name: CORS-Origins
+        description: Ursprung-URLs, die per Browser auf die Gotify-API zugreifen dürfen.
+      corsallowmethods:
+        name: CORS-Methoden
+        description: "HTTP-Methoden, die bei CORS-Anfragen erlaubt sein sollen, zum Beispiel GET, POST oder DELETE."
+      corsallowheaders:
+        name: CORS-Header
+        description: "HTTP-Header, die Browser bei CORS-Anfragen mitsenden dürfen, zum Beispiel Authorization oder Content-Type."
+      keepaliveperiodseconds:
+        name: Keepalive-Intervall
+        description: Intervall in Sekunden für TCP-Keepalive-Pakete. 0 verwendet den Go-Standard, -1 deaktiviert Keepalive.
+      listenaddr:
+        name: Listen-Adresse
+        description: Interne Bind-Adresse des HTTP-Dienstes. Leer bedeutet, dass der Dienst auf allen verfügbaren Adressen im Container lauscht.
+      uploadedimagesdir:
+        name: Pfad für hochgeladene Bilder
+        description: Verzeichnis zum Speichern hochgeladener Anwendungsbilder. Standardmäßig sollte dafür ein Pfad unter /data verwendet werden.
+      pluginsdir:
+        name: Pfad für Plugins
+        description: Verzeichnis, aus dem Gotify Plugins lädt. Leer oder ein ungenutzter Pfad deaktiviert Plugins praktisch.
+network:
+  80/TCP: Direkter HTTP-Zugriff auf Gotify außerhalb des Home-Assistant-Ingress.

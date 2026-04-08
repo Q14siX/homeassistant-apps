@@ -1,0 +1,80 @@
+configuration:
+  general:
+    name: General
+    description: Basic settings for registration and timezone handling.
+    fields:
+      use_homeassistant_timezone:
+        name: Use Home Assistant timezone
+        description: When enabled, the app automatically uses the timezone configured in Home Assistant.
+      timezone_override:
+        name: Custom timezone (optional)
+        description: "Overrides the automatically detected Home Assistant timezone. Leave empty to use the Home Assistant timezone. Example: Europe/Berlin."
+      registration:
+        name: Allow registration
+        description: Allows new users to register themselves directly through the Gotify web interface.
+  defaultuser:
+    name: Initial admin account
+    description: These credentials are only used when Gotify creates the database for the first time.
+    fields:
+      name:
+        name: Username
+        description: Username of the initial administrator. It is only applied when a new database is created.
+      pass:
+        name: Password
+        description: Password of the initial administrator. Changing this later does not update already existing users in an existing database.
+  database:
+    name: Database
+    description: Settings for the database backend used by Gotify.
+    fields:
+      dialect:
+        name: Database type
+        description: Choose whether Gotify should use SQLite, MySQL, or PostgreSQL.
+      connection:
+        name: Connection string
+        description: For SQLite this is usually a file path like /data/gotify.db. For MySQL or PostgreSQL use the full connection string for the external database server.
+  security:
+    name: Security & proxies
+    description: Security-related options for password hashing and reverse proxy handling.
+    fields:
+      passstrength:
+        name: Bcrypt strength
+        description: Cost factor for password hashing. Higher values increase CPU usage but improve protection against offline attacks.
+      trustedproxies:
+        name: Trusted proxies
+        description: IP addresses or networks of reverse proxies whose forwarded headers may be trusted, for example X-Forwarded-For.
+  advanced:
+    name: Advanced
+    description: Less commonly needed options for headers, streams, CORS, networking, and storage paths.
+    fields:
+      responseheaders:
+        name: Extra response headers
+        description: "One entry per line in the format Header-Name: Value, for example X-Frame-Options: SAMEORIGIN."
+      pingperiodseconds:
+        name: Stream ping interval
+        description: Interval in seconds between WebSocket pings for the realtime stream.
+      streamallowedorigins:
+        name: Extra stream origins
+        description: Origins that may open WebSocket connections to the realtime stream. Usually only needed for external frontends.
+      corsalloworigins:
+        name: CORS origins
+        description: Origin URLs that may access the Gotify API from a browser.
+      corsallowmethods:
+        name: CORS methods
+        description: "HTTP methods to allow for CORS requests, for example GET, POST, or DELETE."
+      corsallowheaders:
+        name: CORS headers
+        description: "HTTP headers browsers may send in CORS requests, for example Authorization or Content-Type."
+      keepaliveperiodseconds:
+        name: Keepalive interval
+        description: Interval in seconds for TCP keepalive packets. 0 uses the Go default, -1 disables keepalive.
+      listenaddr:
+        name: Listen address
+        description: Internal bind address for the HTTP service. Leave empty to listen on all available addresses inside the container.
+      uploadedimagesdir:
+        name: Uploaded images path
+        description: Directory used to store uploaded application images. A path below /data is recommended.
+      pluginsdir:
+        name: Plugins path
+        description: Directory from which Gotify loads plugins. Leaving it empty or unused effectively disables plugins.
+network:
+  80/TCP: Direct HTTP access to Gotify outside Home Assistant ingress.
