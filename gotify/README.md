@@ -18,7 +18,7 @@ Damit kannst du Benachrichtigungen, Statusmeldungen und Alarme im eigenen Umfeld
 - Unterstützung für **SQLite**, **MySQL** und **PostgreSQL**
 - zusätzliche Optionen für **Trusted Proxies**, **Response Headers**, **Realtime-Stream** und **CORS**
 
-<details><b>Passende HACS-Integration</b>
+<details><summary><b>Passende HACS-Integration</b></summary>
 
 Zu diesem Gotify Server gibt es außerdem eine passende **HACS-Integration für Home Assistant**.
 
@@ -114,7 +114,7 @@ This allows you to run notifications, status messages, and alerts in your own en
 - support for **SQLite**, **MySQL**, and **PostgreSQL**
 - additional options for **trusted proxies**, **response headers**, **realtime stream**, and **CORS**
 
-<details><b>Matching HACS integration</b>
+<details><summary><b>Matching HACS integration</b></summary>
 
 There is also a matching **HACS integration for Home Assistant** for this Gotify Server.
 
