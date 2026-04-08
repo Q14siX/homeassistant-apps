@@ -1,11 +1,3 @@
-[![Home Assistant](https://img.shields.io/badge/Home%20Assistant-Application-41BDF5?style=flat&logo=home-assistant&logoColor=white)](https://www.home-assistant.io/)
-[![Maintained](https://img.shields.io/badge/Maintained%3F-yes-41BDF5?style=flat)](https://github.com/Q14siX/homeassistant-apps)
-[![Stars](https://img.shields.io/github/stars/Q14siX/homeassistant-apps?style=flat&logo=github&color=41BDF5&label=Stars)](https://github.com/Q14siX/homeassistant-apps/stargazers)
-[![Languages](https://img.shields.io/badge/Languages-DE%20%7C%20EN-41BDF5?style=flat&logo=translate&logoColor=white)](#deutsch--german)
-[![License](https://img.shields.io/github/license/Q14siX/homeassistant-apps?style=flat&color=41BDF5&label=License)](https://github.com/Q14siX/homeassistant-apps/blob/main/LICENSE)
-[![Issues](https://img.shields.io/github/issues/Q14siX/homeassistant-apps?style=flat&color=41BDF5&label=Issues)](https://github.com/Q14siX/homeassistant-apps/issues)
-
----
 # Q14siX.de - Home Assistant Apps
 
 ## Deutsch
