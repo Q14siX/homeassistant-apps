@@ -18,7 +18,7 @@ Damit kannst du Benachrichtigungen, Statusmeldungen und Alarme im eigenen Umfeld
 - Unterstützung für **SQLite**, **MySQL** und **PostgreSQL**
 - zusätzliche Optionen für **Trusted Proxies**, **Response Headers**, **Realtime-Stream** und **CORS**
 
-### Passende HACS-Integration
+<details><b>Passende HACS-Integration</b>
 
 Zu diesem Gotify Server gibt es außerdem eine passende **HACS-Integration für Home Assistant**.
 
@@ -40,6 +40,7 @@ https://github.com/Q14siX/gotify
 Direkt in HACS öffnen:
 
 [![Open your Home Assistant instance and open a repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=Q14siX&repository=gotify&category=integration)
+</details>
 
 ### Installation
 
@@ -113,7 +114,7 @@ This allows you to run notifications, status messages, and alerts in your own en
 - support for **SQLite**, **MySQL**, and **PostgreSQL**
 - additional options for **trusted proxies**, **response headers**, **realtime stream**, and **CORS**
 
-### Matching HACS integration
+<details><b>Matching HACS integration</b>
 
 There is also a matching **HACS integration for Home Assistant** for this Gotify Server.
 
@@ -135,6 +136,7 @@ https://github.com/Q14siX/gotify
 Open directly in HACS:
 
 [![Open your Home Assistant instance and open a repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=Q14siX&repository=gotify&category=integration)
+</details>
 
 ### Installation
 
