@@ -31,6 +31,9 @@ Sie integriert die Weboberfläche sauber in Home Assistant und unterstützt unte
 Diese App dient als Helfer für Import- und Exportvorgänge in Home Assistant.
 Sie unterstützt dabei, ausgewählte Inhalte und Daten gezielt zwischen Sicherung, Wiederherstellung oder Migration einfacher zu verarbeiten.
 
+#### `hacs_extension_manager`
+Home-Assistant-App zur Sicherung, Entfernung, Installation und Wiederherstellung von HACS-Erweiterungen. Die App verwendet eine responsive Ingress-Weboberfläche und ist ausschließlich für Home-Assistant-Administratoren sichtbar.
+
 ---
 
 ## English
@@ -63,3 +66,6 @@ It cleanly integrates the web interface into Home Assistant and supports feature
 #### `import_export_helfer`
 This app is a helper for import and export tasks in Home Assistant.
 It helps process selected content and data more easily for backup, restore, and migration workflows.
+
+#### `hacs_extension_manager`
+Home Assistant app for backing up, removing, installing, and restoring HACS extensions. The app uses a responsive Ingress web interface and is visible only to Home Assistant administrators.
