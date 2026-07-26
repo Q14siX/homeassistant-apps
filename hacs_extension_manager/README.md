@@ -19,7 +19,7 @@ Home-Assistant-App zur Verwaltung installierter HACS- und lokaler Erweiterungen.
 Füge im Home-Assistant-App-Store folgendes Repository hinzu:
 
 ```text
-https://github.com/Q14siX/hacs_extension_manager
+https://github.com/Q14siX/homeassistant-apps
 ```
 
 Öffne anschließend den **HACS Erweiterungsmanager**, installiere und starte die App. Über **In Seitenleiste anzeigen** kann die Ingress-Oberfläche dauerhaft in die Navigation aufgenommen werden.
