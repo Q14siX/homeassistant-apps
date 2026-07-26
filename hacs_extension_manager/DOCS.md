@@ -7,7 +7,7 @@
 3. Folgende Adresse hinzufügen:
 
    ```text
-   https://github.com/Q14siX/hacs_extension_manager
+   https://github.com/Q14siX/hacs_extension_manager/
    ```
 
 4. Den **HACS Erweiterungsmanager** auswählen und installieren.
