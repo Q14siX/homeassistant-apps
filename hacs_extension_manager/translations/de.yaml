@@ -1,0 +1,10 @@
+configuration:
+  max_upload_mb:
+    name: Maximale Uploadgröße
+    description: Maximale Größe einer hochgeladenen ZIP-Datei in Megabyte.
+  create_safety_backup:
+    name: Sicherheitskopie erstellen
+    description: Vor Lösch- und Ersetzungsvorgängen eine interne ZIP-Sicherung anlegen.
+  prefer_hacs_uninstall:
+    name: HACS-Löschung bevorzugen
+    description: HACS-verwaltete Erweiterungen möglichst über die HACS-WebSocket-Schnittstelle austragen.

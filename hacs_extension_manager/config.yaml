@@ -1,0 +1,34 @@
+name: "HACS Erweiterungsmanager"
+version: "20260726.142202"
+slug: "hacs_extension_manager"
+description: >-
+  Installierte HACS-Erweiterungen sichern, herunterladen, löschen und aus ZIP-Dateien wiederherstellen.
+url: "https://github.com/Q14siX/hacs_extension_manager"
+startup: application
+boot: auto
+init: false
+arch:
+  - amd64
+  - aarch64
+ingress: true
+ingress_port: 8099
+ingress_stream: true
+watchdog: "http://[HOST]:[PORT:8099]/health"
+panel_icon: "mdi:archive-cog"
+panel_title: "HACS Manager"
+panel_admin: true
+homeassistant_api: true
+hassio_api: true
+hassio_role: manager
+map:
+  - type: homeassistant_config
+    read_only: false
+    path: /homeassistant
+options:
+  max_upload_mb: 250
+  create_safety_backup: true
+  prefer_hacs_uninstall: true
+schema:
+  max_upload_mb: "int(1,2048)"
+  create_safety_backup: bool
+  prefer_hacs_uninstall: bool

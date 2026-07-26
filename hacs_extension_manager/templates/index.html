@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <meta name="csrf-token" content="{{ csrf_token }}">
+  <title>HACS Erweiterungsmanager</title>
+  <link rel="icon" type="image/png" href="static/icon.png?v={{ version }}">
+  <link rel="stylesheet" href="static/app.css?v={{ version }}">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <img class="brand-icon" src="static/icon.png?v={{ version }}" alt="" aria-hidden="true">
+      <div>
+        <h1>HACS Erweiterungsmanager</h1>
+        <p>Sichern, installieren und kontrolliert entfernen</p>
+      </div>
+    </div>
+    <button class="button secondary" id="refreshButton" type="button">Aktualisieren</button>
+  </header>
+
+  <main class="page-shell">
+    <section class="status-grid" aria-label="Statusübersicht">
+      <article class="metric-card">
+        <span class="metric-label">Erweiterungen</span>
+        <strong id="extensionCount">–</strong>
+        <span class="metric-hint">erkannte Installationen</span>
+      </article>
+      <article class="metric-card">
+        <span class="metric-label">HACS-Verbindung</span>
+        <strong id="hacsState">Prüfung …</strong>
+        <span class="metric-hint" id="hacsMessage">WebSocket-Status</span>
+      </article>
+      <article class="metric-card">
+        <span class="metric-label">App-Version</span>
+        <strong>{{ version }}</strong>
+        <span class="metric-hint">lokale Home-Assistant-App</span>
+      </article>
+    </section>
+
+    <section class="card upload-card">
+      <div class="section-heading">
+        <div>
+          <span class="eyebrow">ZIP-Installation</span>
+          <h2>Erweiterung hinzufügen oder wiederherstellen</h2>
+        </div>
+      </div>
+      <form id="uploadForm" class="upload-form">
+        <label class="drop-zone" id="dropZone">
+          <input id="zipFile" name="file" type="file" accept=".zip,application/zip" required>
+          <span class="drop-icon">⇧</span>
+          <strong>ZIP-Datei auswählen oder hier ablegen</strong>
+          <span id="fileLabel">Noch keine Datei ausgewählt</span>
+        </label>
+        <div class="form-row">
+          <label>
+            <span>Erweiterungstyp</span>
+            <select name="category" id="category">
+              <option value="auto">Automatisch erkennen</option>
+              <option value="integration">Integration</option>
+              <option value="plugin">Frontend-Erweiterung</option>
+              <option value="theme">Theme</option>
+              <option value="python_script">Python-Skript</option>
+              <option value="template">Template</option>
+              <option value="appdaemon">AppDaemon</option>
+              <option value="netdaemon">NetDaemon</option>
+            </select>
+          </label>
+          <label class="checkbox-row">
+            <input type="checkbox" name="overwrite" id="overwrite">
+            <span>Vorhandene Erweiterung ersetzen</span>
+          </label>
+          <button class="button primary" type="submit">ZIP installieren</button>
+        </div>
+      </form>
+    </section>
+
+    <section class="card">
+      <div class="section-heading list-heading">
+        <div>
+          <span class="eyebrow">Installierte Erweiterungen</span>
+          <h2>Verwaltung</h2>
+        </div>
+        <div class="filters">
+          <input id="searchInput" type="search" placeholder="Erweiterung suchen …" aria-label="Erweiterung suchen">
+          <select id="categoryFilter" aria-label="Kategorie filtern">
+            <option value="all">Alle Kategorien</option>
+            <option value="integration">Integrationen</option>
+            <option value="plugin">Frontend</option>
+            <option value="theme">Themes</option>
+            <option value="python_script">Python-Skripte</option>
+            <option value="template">Templates</option>
+            <option value="appdaemon">AppDaemon</option>
+            <option value="netdaemon">NetDaemon</option>
+          </select>
+        </div>
+      </div>
+      <div id="emptyState" class="empty-state" hidden>
+        <strong>Keine Erweiterungen gefunden</strong>
+        <span>Prüfen Sie den Suchbegriff oder die HACS-Verbindung.</span>
+      </div>
+      <div id="extensionList" class="extension-list" aria-live="polite"></div>
+    </section>
+  </main>
+
+  <div class="toast-stack" id="toastStack" aria-live="polite"></div>
+
+  <dialog id="confirmDialog" class="dialog">
+    <form method="dialog">
+      <h3 id="confirmTitle">Aktion bestätigen</h3>
+      <p id="confirmText"></p>
+      <div class="dialog-actions">
+        <button class="button secondary" value="cancel">Abbrechen</button>
+        <button class="button danger" id="confirmAction" value="confirm">Bestätigen</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="restartDialog" class="dialog">
+    <form method="dialog">
+      <h3>Home Assistant neu starten?</h3>
+      <p>Die Dateien wurden geändert. Ein Neustart ist erforderlich, damit Home Assistant die Änderung vollständig übernimmt.</p>
+      <div class="dialog-actions">
+        <button class="button secondary" value="later">Später</button>
+        <button class="button primary" id="restartNow" value="restart">Jetzt neu starten</button>
+      </div>
+    </form>
+  </dialog>
+
+  <div class="busy" id="busyOverlay" hidden>
+    <div class="spinner"></div>
+    <strong id="busyText">Vorgang wird ausgeführt …</strong>
+  </div>
+
+  <script src="static/app.js?v={{ version }}" defer></script>
+</body>
+</html>
