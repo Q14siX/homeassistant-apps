@@ -22,6 +22,15 @@
   </header>
 
   <main class="page-shell">
+    <section id="updateBanner" class="update-banner" aria-live="polite" hidden>
+      <div class="update-banner-icon" aria-hidden="true">⇧</div>
+      <div class="update-banner-content">
+        <span class="eyebrow">App-Update verfügbar</span>
+        <strong id="updateBannerTitle">Eine neue Version ist verfügbar.</strong>
+        <span id="updateBannerText">Die Aktualisierung kann im Home-Assistant-App-Store installiert werden.</span>
+      </div>
+    </section>
+
     <section class="status-grid" aria-label="Statusübersicht">
       <article class="metric-card">
         <span class="metric-label">Erweiterungen</span>
@@ -36,7 +45,13 @@
       <article class="metric-card">
         <span class="metric-label">App-Version</span>
         <strong>{{ version }}</strong>
-        <span class="metric-hint">lokale Home-Assistant-App</span>
+        <span class="metric-hint">installierte Version</span>
+      </article>
+      <article class="metric-card update-card" id="updateCard">
+        <span class="metric-label">Update-Prüfung</span>
+        <strong id="updateState">Prüfung …</strong>
+        <span class="metric-hint" id="updateMessage">Supervisor-Status wird geladen.</span>
+        <button class="button secondary small update-check-button" id="checkUpdatesButton" type="button">Jetzt prüfen</button>
       </article>
     </section>
 
@@ -95,11 +110,16 @@
             <option value="appdaemon">AppDaemon</option>
             <option value="netdaemon">NetDaemon</option>
           </select>
+          <select id="sourceFilter" aria-label="Installationsquelle filtern">
+            <option value="all">Alle Quellen</option>
+            <option value="hacs">Nur HACS</option>
+            <option value="local">Nur lokal</option>
+          </select>
         </div>
       </div>
       <div id="emptyState" class="empty-state" hidden>
         <strong>Keine Erweiterungen gefunden</strong>
-        <span>Prüfen Sie den Suchbegriff oder die HACS-Verbindung.</span>
+        <span>Prüfen Sie Suchbegriff, Kategorie, Installationsquelle oder HACS-Verbindung.</span>
       </div>
       <div id="extensionList" class="extension-list" aria-live="polite"></div>
     </section>

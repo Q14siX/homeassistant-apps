@@ -7,24 +7,26 @@
 3. Folgende Adresse hinzufügen:
 
    ```text
-   https://github.com/Q14siX/hacs_extension_manager/
+   https://github.com/Q14siX/homeassistant-apps
    ```
 
 4. Den **HACS Erweiterungsmanager** auswählen und installieren.
 5. Die App starten.
 6. Optional **In Seitenleiste anzeigen** aktivieren.
 
-Home Assistant baut die App aus dem im Repository enthaltenen `Dockerfile`. Während dieses ersten Builds muss die Home-Assistant-Installation auf die benötigten Alpine- und Python-Pakete zugreifen können.
+## Installierte Erweiterungen filtern
 
-## Alternative lokale Installation
+Oberhalb der Erweiterungsliste stehen drei kombinierbare Filter zur Verfügung:
 
-1. Den Ordner `hacs_extension_manager` in das Home-Assistant-Verzeichnis `/addons/` kopieren.
-2. Im App-Store **Nach Updates suchen** auswählen.
-3. Die App unter **Lokale Apps** installieren und starten.
+- Suchfeld für Name, Domain, Repository und Installationspfad
+- Kategoriefilter für Integrationen, Frontend, Themes, Python-Skripte, Templates, AppDaemon und NetDaemon
+- Quellenfilter mit **Alle Quellen**, **Nur HACS** und **Nur lokal**
+
+Als **HACS** gilt eine Erweiterung, die HACS in seiner Repository-Liste als installiert meldet. Aus ZIP-Dateien oder Sicherungen installierte Erweiterungen werden als **Lokal** angezeigt, solange sie nicht von HACS registriert sind.
 
 ## Unterstützte Installationsarchive
 
-Der automatische Installer erkennt insbesondere folgende Integrationsstrukturen:
+Der automatische Installer erkennt insbesondere:
 
 - Repository-ZIP mit `custom_components/<domain>/manifest.json`
 - ZIP mit einem obersten Integrationsordner `<domain>/manifest.json`
@@ -44,9 +46,28 @@ Die Sicherung kann über die Upload-Funktion wiederhergestellt werden. Der Zielp
 
 ## HACS-Status
 
-Wenn HACS läuft, fragt die App die HACS-WebSocket-Funktion `hacs/repositories/list` ab. Beim Löschen einer HACS-verwalteten Erweiterung wird bevorzugt `hacs/repository/remove` verwendet, damit HACS seine Daten aktualisiert.
+Wenn HACS läuft, fragt die App `hacs/repositories/list` über die Home-Assistant-WebSocket-API ab. Beim Löschen einer HACS-verwalteten Erweiterung wird bevorzugt `hacs/repository/remove` verwendet, damit HACS seine Daten aktualisiert.
 
-Eine aus einer lokalen ZIP oder Sicherung installierte Erweiterung wird technisch korrekt in den Home-Assistant-Konfigurationspfad kopiert. HACS bietet jedoch keine öffentliche Funktion, um eine beliebige lokale ZIP als von HACS heruntergeladen zu registrieren. Die App zeigt solche Installationen deshalb zusätzlich über ihren Dateisystem-Scan an. Für spätere HACS-Updates kann die betreffende Erweiterung in HACS erneut heruntergeladen werden.
+Eine aus einer lokalen ZIP oder Sicherung installierte Erweiterung wird technisch korrekt in den Home-Assistant-Konfigurationspfad kopiert. HACS stellt jedoch keine öffentliche Funktion bereit, um eine beliebige lokale ZIP nachträglich als von HACS heruntergeladene Installation zu registrieren. Solche Erweiterungen erscheinen deshalb als **Lokal**.
+
+## Automatische Update-Prüfung
+
+Die App fragt den Home-Assistant-Supervisor nach der installierten und der neuesten verfügbaren App-Version. Vor einer planmäßigen oder manuellen Prüfung wird der App-Store neu eingelesen, damit Änderungen im Sammel-Repository `https://github.com/Q14siX/homeassistant-apps` berücksichtigt werden.
+
+Standardverhalten:
+
+- erste Prüfung automatisch nach dem App-Start
+- weitere Prüfungen alle 6 Stunden
+- Statusanzeige direkt auf der Startseite
+- auffälliger Hinweis bei verfügbarem Update
+- manuelle Sofortprüfung über **Jetzt prüfen**
+
+Konfigurationsoptionen:
+
+- `automatic_update_check`: automatische Prüfung aktivieren oder deaktivieren
+- `update_check_interval_hours`: Prüfintervall zwischen 1 und 168 Stunden
+
+Die App installiert Updates nicht selbstständig. Die Aktualisierung erfolgt über **Einstellungen → Apps** oder über die automatische App-Aktualisierung des Supervisors.
 
 ## Sicherheitskopien
 
@@ -61,6 +82,8 @@ Nach Installation, Wiederherstellung oder Löschung zeigt die Weboberfläche ein
 - `max_upload_mb`: maximale Uploadgröße in MB
 - `create_safety_backup`: interne Sicherung vor Löschen oder Ersetzen
 - `prefer_hacs_uninstall`: HACS-WebSocket-Löschung bevorzugen
+- `automatic_update_check`: automatische Prüfung auf neue App-Versionen
+- `update_check_interval_hours`: Prüfintervall in Stunden
 
 ## Zugriffsrechte und Grenzen
 

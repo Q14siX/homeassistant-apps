@@ -8,3 +8,9 @@ configuration:
   prefer_hacs_uninstall:
     name: Prefer HACS uninstall
     description: Remove HACS-managed extensions through the HACS WebSocket API when possible.
+  automatic_update_check:
+    name: Check for updates automatically
+    description: Check for a newer app version through the Home Assistant Supervisor at startup and periodically.
+  update_check_interval_hours:
+    name: App update check interval
+    description: Number of hours between automatic version checks.

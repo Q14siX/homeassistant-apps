@@ -9,8 +9,8 @@ LABEL \
   io.hass.arch="${BUILD_ARCH}" \
   org.opencontainers.image.title="HACS Erweiterungsmanager" \
   org.opencontainers.image.description="Sichern, löschen und Wiederherstellen von HACS-Erweiterungen" \
-  org.opencontainers.image.source="https://github.com/Q14siX/hacs_extension_manager" \
-  org.opencontainers.image.documentation="https://github.com/Q14siX/hacs_extension_manager/blob/main/hacs_extension_manager/DOCS.md" \
+  org.opencontainers.image.source="https://github.com/Q14siX/homeassistant-apps" \
+  org.opencontainers.image.documentation="https://github.com/Q14siX/homeassistant-apps/blob/main/hacs_extension_manager/DOCS.md" \
   org.opencontainers.image.licenses="MIT"
 
 RUN apk add --no-cache python3 py3-pip && \
@@ -27,7 +27,7 @@ ENV PATH="/opt/venv/bin:${PATH}" \
     APP_DATA=/data
 
 WORKDIR /app
-COPY app.py manager.py supervisor.py ./
+COPY app.py manager.py supervisor.py update_checker.py ./
 COPY templates ./templates
 COPY static ./static
 COPY run.sh /run.sh

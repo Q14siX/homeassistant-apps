@@ -34,25 +34,62 @@ class HomeAssistantClient:
             "Content-Type": "application/json",
         }
 
-    def restart_core(self) -> dict[str, Any]:
-        """Restart Home Assistant Core through Supervisor."""
+    def _request(
+        self,
+        method: str,
+        path: str,
+        *,
+        payload: dict[str, Any] | None = None,
+        timeout: int | None = None,
+    ) -> Any:
+        if not path.startswith("/"):
+            path = f"/{path}"
         try:
-            response = requests.post(
-                "http://supervisor/core/restart",
+            response = requests.request(
+                method,
+                f"http://supervisor{path}",
                 headers=self._headers(),
-                json={},
-                timeout=self.timeout,
+                json=payload,
+                timeout=timeout or self.timeout,
             )
         except requests.RequestException as exc:
             raise SupervisorError(f"Supervisor ist nicht erreichbar: {exc}") from exc
-        if response.status_code >= 300:
-            raise SupervisorError(
-                f"Neustart wurde abgelehnt ({response.status_code}): {response.text[:500]}"
-            )
+
         try:
-            return response.json()
+            body = response.json()
         except ValueError:
-            return {"result": "ok"}
+            body = None
+
+        if response.status_code >= 300:
+            detail = ""
+            if isinstance(body, dict):
+                detail = str(body.get("message") or body.get("error") or "")
+            if not detail:
+                detail = response.text[:500]
+            raise SupervisorError(
+                f"Supervisor-Anfrage wurde abgelehnt ({response.status_code}): {detail}"
+            )
+
+        if isinstance(body, dict) and body.get("result") == "error":
+            raise SupervisorError(str(body.get("message") or "Supervisor-Anfrage fehlgeschlagen."))
+        if isinstance(body, dict) and "data" in body:
+            return body.get("data")
+        return body if body is not None else {"result": "ok"}
+
+    def restart_core(self) -> Any:
+        """Restart Home Assistant Core through Supervisor."""
+        return self._request("POST", "/core/restart", payload={})
+
+    def reload_store(self) -> Any:
+        """Refresh app repositories and available versions."""
+        return self._request("POST", "/store/reload", payload={}, timeout=120)
+
+    def get_self_info(self) -> dict[str, Any]:
+        """Return Supervisor metadata for the calling app."""
+        result = self._request("GET", "/addons/self/info")
+        if not isinstance(result, dict):
+            raise SupervisorError("Supervisor lieferte keine gültigen App-Informationen.")
+        return result
 
     def websocket_command(self, command: dict[str, Any]) -> Any:
         """Execute one Home Assistant WebSocket command."""

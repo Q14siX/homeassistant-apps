@@ -1,14 +1,24 @@
 # Änderungsprotokoll
 
+## 20260726.190947
+
+- automatische Update-Prüfung über die Home-Assistant-Supervisor-API ergänzt
+- App-Store wird vor planmäßigen und manuellen Prüfungen aktualisiert
+- installierte und neueste verfügbare App-Version werden angezeigt
+- auffälliger Update-Hinweis und Schaltfläche **Jetzt prüfen** ergänzt
+- Prüfintervall über die App-Konfiguration einstellbar
+- Quellenfilter **Alle Quellen**, **Nur HACS** und **Nur lokal** ergänzt
+- Quellenfilter mit Suche und Kategoriefilter kombinierbar
+- lokale Installationen farblich eindeutig gekennzeichnet
+- Repository- und Dokumentationsverweise auf `Q14siX/homeassistant-apps` umgestellt
+
+
 ## 20260726.142202
 
 - neues ICON im Kopfbereich der Ingress-Weboberfläche eingebunden
 - bisherigen Platzhalterbuchstaben `H` entfernt
 - App-ICON als Browser-Favicon ergänzt
 - ICON und LOGO den statischen Webressourcen hinzugefügt
-
-## 20260726.142202
-
 - neues ICON und neues LOGO integriert
 - Grafiken für die Home-Assistant-App-Store-Darstellung zugeschnitten und mit Innenabstand aufbereitet
 - JavaScript-Fehler `Cannot read properties of null (reading 'reset')` nach erfolgreicher ZIP-Installation behoben

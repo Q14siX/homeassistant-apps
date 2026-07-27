@@ -8,3 +8,9 @@ configuration:
   prefer_hacs_uninstall:
     name: HACS-Löschung bevorzugen
     description: HACS-verwaltete Erweiterungen möglichst über die HACS-WebSocket-Schnittstelle austragen.
+  automatic_update_check:
+    name: Automatisch auf Updates prüfen
+    description: Beim Start und regelmäßig über den Home-Assistant-Supervisor nach einer neueren App-Version suchen.
+  update_check_interval_hours:
+    name: Prüfintervall für App-Updates
+    description: Zeitabstand zwischen automatischen Versionsprüfungen in Stunden.

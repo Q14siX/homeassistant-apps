@@ -19,7 +19,7 @@ from typing import Any, Iterable
 
 from supervisor import HomeAssistantClient, SupervisorError
 
-APP_VERSION = "20260726.142202"
+APP_VERSION = "20260726.190947"
 ARCHIVE_FORMAT = "hacs-extension-manager/v1"
 METADATA_NAME = "hacs-extension-manager.json"
 IGNORED_NAMES = {".DS_Store", "Thumbs.db"}

@@ -6,6 +6,7 @@
   const empty = $('emptyState');
   const search = $('searchInput');
   const categoryFilter = $('categoryFilter');
+  const sourceFilter = $('sourceFilter');
   const confirmDialog = $('confirmDialog');
   const restartDialog = $('restartDialog');
   const busy = $('busyOverlay');
@@ -26,6 +27,101 @@
     return String(value ?? '').replace(/[&<>'"]/g, (char) => ({
       '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#039;', '"': '&quot;'
     })[char]);
+  }
+
+  function formatDateTime(value) {
+    if (!value) return '';
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return '';
+    return date.toLocaleString('de-DE', { dateStyle: 'short', timeStyle: 'short' });
+  }
+
+  function renderUpdateStatus(data) {
+    const card = $('updateCard');
+    const banner = $('updateBanner');
+    const stateNode = $('updateState');
+    const messageNode = $('updateMessage');
+    card.classList.remove('update-ready', 'update-current', 'update-error');
+
+    if (data.checking) {
+      stateNode.textContent = 'Prüfung …';
+      messageNode.textContent = data.message || 'Neueste Version wird ermittelt.';
+      banner.hidden = true;
+      window.setTimeout(() => loadUpdateStatus(false), 3000);
+      return;
+    }
+    if (data.enabled === false) {
+      stateNode.textContent = 'Deaktiviert';
+      messageNode.textContent = data.message || 'Automatische Prüfung ist deaktiviert.';
+      banner.hidden = true;
+      return;
+    }
+    if (!data.available && data.error) {
+      card.classList.add('update-error');
+      stateNode.textContent = 'Nicht verfügbar';
+      messageNode.textContent = data.message || data.error;
+      banner.hidden = true;
+      return;
+    }
+    if (!data.checked_at) {
+      stateNode.textContent = 'Ausstehend';
+      messageNode.textContent = data.message || 'Die erste automatische Prüfung startet in Kürze.';
+      banner.hidden = true;
+      window.setTimeout(() => loadUpdateStatus(false), 5000);
+      return;
+    }
+
+    const installed = data.installed_version || 'unbekannt';
+    const latest = data.latest_version || installed;
+    const checked = formatDateTime(data.checked_at);
+
+    if (data.update_available) {
+      card.classList.add('update-ready');
+      stateNode.textContent = 'Update verfügbar';
+      messageNode.textContent = `Installiert ${installed} · Verfügbar ${latest}${checked ? ` · geprüft ${checked}` : ''}`;
+      $('updateBannerTitle').textContent = `Version ${latest} ist verfügbar.`;
+      $('updateBannerText').textContent = data.auto_update
+        ? `Installiert ist ${installed}. Die automatische Aktualisierung ist im Supervisor aktiviert.`
+        : `Installiert ist ${installed}. Aktualisieren Sie die App unter Einstellungen → Apps.`;
+      banner.hidden = false;
+      return;
+    }
+
+    banner.hidden = true;
+    if (!data.available || data.error) {
+      card.classList.add('update-error');
+      stateNode.textContent = data.available ? 'Mit Warnung geprüft' : 'Nicht verfügbar';
+      messageNode.textContent = data.message || data.error || 'Update-Status konnte nicht geladen werden.';
+      return;
+    }
+
+    card.classList.add('update-current');
+    stateNode.textContent = 'Aktuell';
+    messageNode.textContent = `Neueste Version ${latest}${checked ? ` · geprüft ${checked}` : ''}`;
+  }
+
+  async function loadUpdateStatus(force = false) {
+    if (force) setBusy(true, 'App-Store und verfügbare Version werden geprüft …');
+    try {
+      const response = force
+        ? await api('api/update-status/check', { method: 'POST' })
+        : await api('api/update-status');
+      const data = await parseJson(response);
+      renderUpdateStatus(data);
+      if (force) {
+        toast(
+          data.update_available
+            ? `Neue App-Version ${data.latest_version} ist verfügbar.`
+            : 'Die installierte App-Version ist aktuell.',
+          data.update_available ? 'warning' : 'success'
+        );
+      }
+    } catch (error) {
+      renderUpdateStatus({ available: false, error: error.message, message: error.message });
+      if (force) toast(error.message, 'error');
+    } finally {
+      if (force) setBusy(false);
+    }
   }
 
   function formatBytes(bytes) {
@@ -81,10 +177,15 @@
   function render() {
     const term = search.value.trim().toLowerCase();
     const category = categoryFilter.value;
+    const source = sourceFilter.value;
     const filtered = state.items.filter((item) => {
       const matchesCategory = category === 'all' || item.category === category;
+      const isHacs = item.source === 'hacs';
+      const matchesSource = source === 'all'
+        || (source === 'hacs' && isHacs)
+        || (source === 'local' && !isHacs);
       const haystack = `${item.name} ${item.domain} ${item.repository} ${item.relative_path}`.toLowerCase();
-      return matchesCategory && (!term || haystack.includes(term));
+      return matchesCategory && matchesSource && (!term || haystack.includes(term));
     });
     empty.hidden = filtered.length !== 0;
     list.innerHTML = filtered.map((item) => `
@@ -93,7 +194,7 @@
           <div class="extension-title-row">
             <span class="extension-title">${escapeHtml(item.name)}</span>
             <span class="badge">${escapeHtml(item.category_label)}</span>
-            ${item.source === 'hacs' ? '<span class="badge hacs">HACS</span>' : '<span class="badge">Lokal</span>'}
+            ${item.source === 'hacs' ? '<span class="badge hacs">HACS</span>' : '<span class="badge local">Lokal</span>'}
           </div>
           <div class="extension-meta">
             ${item.version ? `<span>Version ${escapeHtml(item.version)}</span>` : ''}
@@ -279,6 +380,10 @@
 
   search.addEventListener('input', render);
   categoryFilter.addEventListener('change', render);
+  sourceFilter.addEventListener('change', render);
   $('refreshButton').addEventListener('click', loadExtensions);
+  $('checkUpdatesButton').addEventListener('click', () => loadUpdateStatus(true));
   loadExtensions();
+  loadUpdateStatus();
+  window.setInterval(() => loadUpdateStatus(false), 5 * 60 * 1000);
 })();

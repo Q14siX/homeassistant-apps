@@ -14,6 +14,7 @@ from werkzeug.utils import secure_filename
 
 from manager import APP_VERSION, ExtensionManager, ManagerError
 from supervisor import HomeAssistantClient, SupervisorError
+from update_checker import UpdateChecker
 
 
 def load_options() -> dict[str, Any]:
@@ -21,6 +22,8 @@ def load_options() -> dict[str, Any]:
         "max_upload_mb": 250,
         "create_safety_backup": True,
         "prefer_hacs_uninstall": True,
+        "automatic_update_check": True,
+        "update_check_interval_hours": 6,
     }
     try:
         loaded = json.loads(Path("/data/options.json").read_text(encoding="utf-8"))
@@ -35,6 +38,15 @@ OPTIONS = load_options()
 CONFIG_ROOT = Path(os.environ.get("HOMEASSISTANT_CONFIG", "/homeassistant"))
 DATA_ROOT = Path(os.environ.get("APP_DATA", "/data"))
 HA_CLIENT = HomeAssistantClient()
+UPDATE_CHECKER = UpdateChecker(
+    HA_CLIENT,
+    APP_VERSION,
+    DATA_ROOT,
+    enabled=bool(OPTIONS["automatic_update_check"]),
+    interval_hours=int(OPTIONS["update_check_interval_hours"]),
+)
+UPDATE_CHECKER.start()
+
 MANAGER = ExtensionManager(
     CONFIG_ROOT,
     DATA_ROOT,
@@ -96,8 +108,19 @@ def status():
             "restart_required": RESTART_REQUIRED,
             "hacs": MANAGER.hacs_status,
             "max_upload_mb": OPTIONS["max_upload_mb"],
+            "update": UPDATE_CHECKER.public_status(),
         }
     )
+
+
+@app.get("/api/update-status")
+def update_status():
+    return jsonify({"ok": True, **UPDATE_CHECKER.public_status()})
+
+
+@app.post("/api/update-status/check")
+def check_update_status():
+    return jsonify({"ok": True, **UPDATE_CHECKER.check(force=True)})
 
 
 @app.get("/api/extensions")
